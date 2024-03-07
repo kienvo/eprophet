@@ -1,0 +1,36 @@
+doctype html
+html
+	head
+		title= title
+		link(rel='stylesheet', href='/stylesheets/style.css')
+		script(src="https://cdn.jsdelivr.net/npm/chart.js")
+
+	body
+		#container
+			canvas#myChart
+		block content
+
+		script.
+			const ctx = document.getElementById('myChart');
+
+			new Chart(ctx, {
+				type: 'line',
+				data: {
+					labels: [
+						'0h00', '0h05', '0h10', '0h15', '0h20', '0h25',
+						'0h30', '0h35', '0h40', '0h45', '0h50', '0h55'
+					],
+					datasets: [{
+						label: 'Energy',
+						data: [12, 15, 3, 5, 2, 3, 12, 15, 3, 5, 2, 3],
+						borderWidth: 3
+					}]
+				},
+				options: {
+					scales: {
+						y: {
+							beginAtZero: true
+						}
+					}
+				}
+			});
