@@ -1,6 +1,9 @@
 var express = require('express');
 var router = express.Router();
 
+const MongoClient = require('mongodb').MongoClient;
+const url = 'mongodb://localhost:27017';
+
 router.use('/', function (req, res, next) {
 	// var key = req.query['api-key'];
 
@@ -30,4 +33,49 @@ router.get('/dataserie', function (req, res) {
 	);
 });
 
+function get_time_server(){
+	const svt = new Date();
+// Convert to milliseconds
+	const mlsc = svt.getTime();
+// Create a new Date object for UTC+7
+	const nt = new Date(mlsc + 3600000 * 7);
+	console.log("Server time: ",nt)
+	return nt;
+}
+
+function send_to_database(data){
+	MongoClient.connect(url).then((client) => {
+		const db = client.db('local');
+		const collection = db.collection('room1');
+
+		data.timestamp= get_time_server();
+		collection.insertOne(data);
+		console.log("Gửi lên MongoDB thành công\n")
+	}).catch ((error) => {
+		console.error('Lỗi khi lưu dữ liệu vào MongoDB:', error);
+		console.log("")
+		res.status(500).json({ error: "Lỗi khi lưu dữ liệu vào MongoDB" });
+	})
+}
+  
+ 
+router.post('/post/hardware_data', (req, res) => {
+	const data = req.body;
+	if (data) {
+		console.log("Dữ liệu nhận được:", data);
+		res.json({ message: "Dữ liệu đã được nhận thành công!" });
+		
+		if(data.U<0 || data.U>300){
+			console.log("Dữ liệu U bất thường")
+		}else if(data.I<0 || data.I>1){
+			console.log("Dữ liệu I bất thường")
+		}else if(data.lux<0 || data.lux>10000){
+			console.log("Dữ liệu lux bất thường")
+		}else {
+			send_to_database(data);
+		}
+	} else {
+		res.status(400).json({ error: "Yêu cầu không chứa dữ liệu JSON" });
+	}
+});
 module.exports = router;
