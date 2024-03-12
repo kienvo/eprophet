@@ -20,58 +20,57 @@ router.use('/', function (req, res, next) {
 
 router.get('/dataserie', function (req, res) {
 	res.send({
-			labels: [
-				'0h00', '0h05', '0h10', '0h15', '0h20', '0h25',
-				'0h30', '0h35', '0h40', '0h45', '0h50', '0h55'
-			],
-			datasets: [{
-				label: 'Energy',
-				data: [12, 15, 3, 5, 2, 3, 12, 15, 3, 5, 2, 3],
-				borderWidth: 3
-			}]
-		}
+		labels: [
+			'0h00', '0h05', '0h10', '0h15', '0h20', '0h25',
+			'0h30', '0h35', '0h40', '0h45', '0h50', '0h55'
+		],
+		datasets: [{
+			label: 'Energy',
+			data: [12, 15, 3, 5, 2, 3, 12, 15, 3, 5, 2, 3],
+			borderWidth: 3
+		}]
+	}
 	);
 });
 
-function get_time_server(){
+function get_time_server() {
 	const svt = new Date();
-// Convert to milliseconds
+	// Convert to milliseconds
 	const mlsc = svt.getTime();
-// Create a new Date object for UTC+7
+	// Create a new Date object for UTC+7
 	const nt = new Date(mlsc + 3600000 * 7);
-	console.log("Server time: ",nt)
+	console.log("Server time: ", nt)
 	return nt;
 }
 
-function send_to_database(data){
+function send_to_database(data) {
 	MongoClient.connect(url).then((client) => {
 		const db = client.db('local');
 		const collection = db.collection('room1');
 
-		data.timestamp= get_time_server();
+		data.timestamp = get_time_server();
 		collection.insertOne(data);
 		console.log("Gửi lên MongoDB thành công\n")
-	}).catch ((error) => {
+	}).catch((error) => {
 		console.error('Lỗi khi lưu dữ liệu vào MongoDB:', error);
 		console.log("")
 		res.status(500).json({ error: "Lỗi khi lưu dữ liệu vào MongoDB" });
 	})
 }
-  
- 
+
 router.post('/post/hardware_data', (req, res) => {
 	const data = req.body;
 	if (data) {
 		console.log("Dữ liệu nhận được:", data);
 		res.json({ message: "Dữ liệu đã được nhận thành công!" });
-		
-		if(data.U<0 || data.U>300){
+
+		if (data.U < 0 || data.U > 300) {
 			console.log("Dữ liệu U bất thường")
-		}else if(data.I<0 || data.I>1){
+		} else if (data.I < 0 || data.I > 1) {
 			console.log("Dữ liệu I bất thường")
-		}else if(data.lux<0 || data.lux>10000){
+		} else if (data.lux < 0 || data.lux > 10000) {
 			console.log("Dữ liệu lux bất thường")
-		}else {
+		} else {
 			send_to_database(data);
 		}
 	} else {
