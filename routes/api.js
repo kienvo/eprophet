@@ -56,7 +56,7 @@ router.post('/post/hardware_data', (req, res) => {
 			data.timestamp = get_time_server();
 			console.log(req.app.get('db'))
 			req.app.get('db')
-				.collection('room1').insertOne(data);
+				.collection('deviceData').insertOne(data);
 		}
 	} else {
 		res.status(400).json({ error: "Yêu cầu không chứa dữ liệu JSON" });

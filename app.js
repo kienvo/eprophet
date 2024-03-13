@@ -45,7 +45,7 @@ app.use(function(err, req, res, next) {
 
 // set db connection
 const { MongoClient } = require("mongodb");
-const dbname = 'local';
+const dbname = 'prophet';
 const client = new MongoClient('mongodb://localhost:27017');
 client.connect().then((err, cl) => {
 	app.set('db',client.db(dbname))
