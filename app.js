@@ -43,4 +43,17 @@ app.use(function(err, req, res, next) {
   res.render('error');
 });
 
+// set db connection
+const { MongoClient } = require("mongodb");
+const dbname = 'local';
+const client = new MongoClient('mongodb://localhost:27017');
+client.connect().then((err, cl) => {
+	app.set('db',client.db(dbname))
+	console.log("database: connected!");
+}).catch((error) => {
+	console.error('database: connection failed!');
+	console.error('shuting down server');
+	throw error
+})
+
 module.exports = {app, socketapi};

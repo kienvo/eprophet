@@ -14,7 +14,7 @@ html
 		script.
 			const ctx = document.getElementById('myChart');
 			const socket = io();
-			socket.on('data', (dataserie) => {
+			socket.on('devData', (dataserie) => {
 				console.log(dataserie);
 				
 				new Chart(ctx, {

@@ -1,9 +1,6 @@
 var express = require('express');
 var router = express.Router();
 
-const MongoClient = require('mongodb').MongoClient;
-const url = 'mongodb://localhost:27017';
-
 router.use('/', function (req, res, next) {
 	// var key = req.query['api-key'];
 
@@ -43,21 +40,6 @@ function get_time_server() {
 	return nt;
 }
 
-function send_to_database(data) {
-	MongoClient.connect(url).then((client) => {
-		const db = client.db('local');
-		const collection = db.collection('room1');
-
-		data.timestamp = get_time_server();
-		collection.insertOne(data);
-		console.log("Gửi lên MongoDB thành công\n")
-	}).catch((error) => {
-		console.error('Lỗi khi lưu dữ liệu vào MongoDB:', error);
-		console.log("")
-		res.status(500).json({ error: "Lỗi khi lưu dữ liệu vào MongoDB" });
-	})
-}
-
 router.post('/post/hardware_data', (req, res) => {
 	const data = req.body;
 	if (data) {
@@ -71,7 +53,10 @@ router.post('/post/hardware_data', (req, res) => {
 		} else if (data.lux < 0 || data.lux > 10000) {
 			console.log("Dữ liệu lux bất thường")
 		} else {
-			send_to_database(data);
+			data.timestamp = get_time_server();
+			console.log(req.app.get('db'))
+			req.app.get('db')
+				.collection('room1').insertOne(data);
 		}
 	} else {
 		res.status(400).json({ error: "Yêu cầu không chứa dữ liệu JSON" });
