@@ -77,4 +77,38 @@ router.post('/post/hardware_data', (req, res) => {
 		res.status(400).json({ error: "Yêu cầu không chứa dữ liệu JSON" });
 	}
 });
+
+app.get('/get_latest_data', function (req, res) {
+    MongoClient.connect(url).then((client) => {
+        const db = client.db('local');
+        const getCollection = db.collection('room1');
+    
+        getCollection.find({dev_id: req.query.dev_id}).limit(req.query.length-'0').sort({timestamp:-1}).toArray().then((documents) => {
+            documents.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+            dataserie={
+                dev_id: req.query.dev_id,
+                labels: documents.map(item => item.timestamp),
+                datasets: [{
+                    label: 'Vontage',
+                    data: documents.map(item => item.U)
+                },{
+                    label: 'Current',
+                    data: documents.map(item => item.I)
+                },{
+                    label: 'Lux',
+                    data: documents.map(item => item.lux)
+                }]
+            };
+            console.log("Found documents:", documents);
+            res.json(dataserie);
+        }).catch((error) => {
+            console.error("Error fetching documents:", error);
+        }).finally(() => {
+            client.close();
+        }).catch((error) => {
+            console.error("Error connecting to MongoDB:", error);
+        });
+    });
+});
+
 module.exports = router;
