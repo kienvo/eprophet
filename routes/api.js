@@ -78,7 +78,7 @@ router.post('/post/hardware_data', (req, res) => {
 	}
 });
 
-app.get('/get_latest_data', function (req, res) {
+router.get('/get_latest_data', function (req, res) {
     MongoClient.connect(url).then((client) => {
         const db = client.db('local');
         const getCollection = db.collection('room1');
