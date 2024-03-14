@@ -62,4 +62,32 @@ router.post('/post/hardware_data', (req, res) => {
 		res.status(400).json({ error: "Yêu cầu không chứa dữ liệu JSON" });
 	}
 });
+
+router.get('/get_latest_data', function (req, res) {
+	const c = req.app.get('db').collection('deviceData');
+
+	c.find({dev_id: req.query.dev_id})
+		.limit(req.query.length-'0').sort({timestamp:-1})
+		.toArray().then((documents) => {
+		documents.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+		dataserie={
+			dev_id: req.query.dev_id,
+			labels: documents.map(item => item.timestamp),
+			datasets: [{
+				label: 'Voltage',
+				data: documents.map(item => item.U)
+			},{
+				label: 'Current',
+				data: documents.map(item => item.I)
+			},{
+				label: 'Lux',
+				data: documents.map(item => item.lux)
+			}]
+		};
+		res.json(dataserie);
+	}).catch((error) => {
+		console.error("Error fetching documents:");
+	})
+});
+
 module.exports = router;
