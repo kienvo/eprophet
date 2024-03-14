@@ -47,13 +47,31 @@ app.use(function(err, req, res, next) {
 const { MongoClient } = require("mongodb");
 const dbname = 'prophet';
 const client = new MongoClient('mongodb://localhost:27017');
+let db
 client.connect().then((err, cl) => {
-	app.set('db',client.db(dbname))
+	db = client.db(dbname)
+	app.set('db',db)
 	console.log("database: connected!");
 }).catch((error) => {
 	console.error('database: connection failed!');
 	console.error('shuting down server');
 	throw error
 })
+
+io = socketapi.io
+io.on('connection', (socket) => {
+	console.log('Socket.io: a user connected');
+	io.to(socket.id).emit('devData', {
+		labels: [
+			'0h01', '0h05', '0h10', '0h15', '0h20', '0h25',
+			'0h30', '0h35', '0h40', '0h45', '0h50', '0h55'
+		],
+		datasets: [{
+			label: 'Energy',
+			data: [12, 15, 3, 5, 2, 3, 12, 15, 3, 5, 2, 3],
+			borderWidth: 3
+		}]
+	});
+});
 
 module.exports = {app, socketapi};
