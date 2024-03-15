@@ -90,4 +90,37 @@ router.get('/get_latest_data', function (req, res) {
 	})
 });
 
+router.get('/get_data_inrange', function (req, res) {
+	var devid=req.query.dev_id;
+	var t1=req.query.t1;
+	var t2=req.query.t2;
+	if(devid && t1 && t2){
+		var qquery={id: devid,timestamp:{$gte: new Date(t1), $lt:new Date(t2)}};
+		const c = req.app.get('db').collection('deviceData');
+
+		c.find(qquery).sort({timestamp:1}).toArray().then((documents) => {
+			documents.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+			dataserie={
+				dev_id: devid,
+				labels: documents.map(item => item.timestamp),
+				datasets: [{
+					label: 'Voltage',
+					data: documents.map(item => item.U)
+				},{
+					label: 'Current',
+					data: documents.map(item => item.I)
+				},{
+					label: 'Lux',
+					data: documents.map(item => item.lux)
+				}]
+			};
+			res.json(dataserie);
+		}).catch((error) => {
+			console.error("Error fetching documents:");
+		})
+	}else{
+		res.status(400).json({ error: "Thiếu dev_id, t1 hoặc t2" });
+	}
+});
+
 module.exports = router;
