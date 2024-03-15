@@ -64,30 +64,47 @@ router.post('/post/hardware_data', (req, res) => {
 });
 
 router.get('/get_latest_data', function (req, res) {
-	const c = req.app.get('db').collection('deviceData');
+	var devid=req.query.dev_id;
+	var length=req.query.length;
+	if(devid && length){
+		length=parseInt(length, 10);
+		var name_collection='';
+		var time_sort=0;
+		var qquery={id: devid};
+		if(length<0){
+			name_collection='deviceData';
+			time_sort=-1;
+		}else{
+			name_collection='predictData';
+			time_sort=1;
+			qquery={id: devid, timestamp:{$gte: get_time_server()}};
+		}
+		const c = req.app.get('db').collection(name_collection);
 
-	c.find({dev_id: req.query.dev_id})
-		.limit(req.query.length-'0').sort({timestamp:-1})
-		.toArray().then((documents) => {
-		documents.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
-		dataserie={
-			dev_id: req.query.dev_id,
-			labels: documents.map(item => item.timestamp),
-			datasets: [{
-				label: 'Voltage',
-				data: documents.map(item => item.U)
-			},{
-				label: 'Current',
-				data: documents.map(item => item.I)
-			},{
-				label: 'Lux',
-				data: documents.map(item => item.lux)
-			}]
-		};
-		res.json(dataserie);
-	}).catch((error) => {
-		console.error("Error fetching documents:");
-	})
+		c.find(qquery).limit(Math.abs(length)).sort({timestamp:time_sort})
+			.toArray().then((documents) => {
+			documents.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+			dataserie={
+				dev_id: devid,
+				labels: documents.map(item => item.timestamp),
+				datasets: [{
+					label: 'Voltage',
+					data: documents.map(item => item.U)
+				},{
+					label: 'Current',
+					data: documents.map(item => item.I)
+				},{
+					label: 'Lux',
+					data: documents.map(item => item.lux)
+				}]
+			};
+			res.json(dataserie);
+		}).catch((error) => {
+			console.error("Error fetching documents:");
+		})
+	}else{
+		res.status(400).json({ error: "Thiếu dev_id hoặc length" });
+	}
 });
 
 module.exports = router;
