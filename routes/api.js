@@ -94,6 +94,9 @@ router.get('/get_latest_data', function (req, res) {
 					label: 'Current',
 					data: documents.map(item => item.I)
 				},{
+					label: 'Power',
+					data: documents.map(item => item.P)
+				},{
 					label: 'Lux',
 					data: documents.map(item => item.lux)
 				}]
@@ -126,6 +129,9 @@ router.get('/get_data_inrange', function (req, res) {
 				},{
 					label: 'Current',
 					data: documents.map(item => item.I)
+				},{
+					label: 'Power',
+					data: documents.map(item => item.P)
 				},{
 					label: 'Lux',
 					data: documents.map(item => item.lux)
