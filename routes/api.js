@@ -42,7 +42,7 @@ function get_time_server() {
 
 router.post('/post/hardware_data', (req, res) => {
 	const data = req.body;
-	if (data) {
+	if (data.id && data.U && data.I && data.P && data.lux && data.localtime) {
 		console.log("Dữ liệu nhận được:", data);
 		res.json({ message: "Dữ liệu đã được nhận thành công!" });
 
@@ -59,7 +59,7 @@ router.post('/post/hardware_data', (req, res) => {
 				.collection('deviceData').insertOne(data);
 		}
 	} else {
-		res.status(400).json({ error: "Yêu cầu không chứa dữ liệu JSON" });
+		res.status(400).json({ error: "Dữ liệu không đúng định dạng" });
 	}
 });
 
