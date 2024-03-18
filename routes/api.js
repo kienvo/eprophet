@@ -42,7 +42,7 @@ function get_time_server() {
 
 router.post('/post/hardware_data', (req, res) => {
 	const data = req.body;
-	if (data) {
+	if (data.id && data.U && data.I && data.P && data.lux && data.localtime) {
 		console.log("Dữ liệu nhận được:", data);
 		res.json({ message: "Dữ liệu đã được nhận thành công!" });
 
@@ -53,13 +53,21 @@ router.post('/post/hardware_data', (req, res) => {
 		} else if (data.lux < 0 || data.lux > 10000) {
 			console.log("Dữ liệu lux bất thường")
 		} else {
-			data.timestamp = get_time_server();
+			data1={
+				id: data.id,
+				U: data.U,
+				I: data.I,
+				P: data.P,
+				lux: data.lux,
+				localtime: data.localtime,
+				timestamp: get_time_server()
+			}
 			console.log(req.app.get('db'))
 			req.app.get('db')
-				.collection('deviceData').insertOne(data);
+				.collection('deviceData').insertOne(data1);
 		}
 	} else {
-		res.status(400).json({ error: "Yêu cầu không chứa dữ liệu JSON" });
+		res.status(400).json({ error: "Dữ liệu không đúng định dạng" });
 	}
 });
 
