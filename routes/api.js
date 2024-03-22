@@ -140,4 +140,42 @@ router.get('/get_data_inrange', function (req, res) {
 	}
 });
 
+router.get('/get_all_data', function (req, res) {
+	var devid=req.query.dev_id;
+	if(devid){
+		var qquery={id: devid};
+		const c = req.app.get('db').collection('deviceData');
+
+		c.find(qquery).sort({timestamp:1}).toArray().then((documents) => {
+			dataserie={
+				dev_id: devid,
+				timestamp: documents.map(item => item.timestamp),
+				datasets: [{
+					label: 'Voltage',
+					unit: 'V',
+					data: documents.map(item => item.U)
+				},{
+					label: 'Current',
+					unit: 'A',
+					data: documents.map(item => item.I)
+				},{
+					label: 'Power',
+					unit: 'W',
+					data: documents.map(item => item.P)
+				},{
+					label: 'Lux',
+					unit: 'lux',
+					data: documents.map(item => item.lux)
+				}]
+			};
+			
+			res.json(documents);
+		}).catch((error) => {
+			console.error("Error fetching documents:");
+		})
+	}else{
+		res.status(400).json({ error: "Thiếu dev_id" });
+	}
+});
+
 module.exports = router;
