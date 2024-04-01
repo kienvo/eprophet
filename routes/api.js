@@ -107,6 +107,54 @@ router.get('/get_latest_data', function (req, res) {
 	}
 });
 
+
+router.get('/raw', function (req, res) 
+{
+	if (!req.query.dev_id) {
+		res.status(400).json({ error: "Missing dev_id" });
+		return;
+	}
+	if (req.query.dev_id.length != 17) {
+		res.status(400).json({ error: "dev_id should be a mac address" });
+		return;
+	}
+	if (!req.query.length) {
+		res.status(400).json({ error: "Missing length" });
+		return;
+	}
+	if (!req.query.length) {
+		res.status(400).json({ error: "Missing length" });
+		return;
+	}
+	len=parseInt(req.query.length, 10);
+	if (isNaN(len)) {
+		res.status(400).json({ error: "length should be a number" });
+		return;
+	}
+
+	var coll='';
+	var sort=0;
+	var q={id: req.query.dev_id};
+	if(len<0){
+		coll='deviceData';
+		sort=-1;
+	}else{
+		coll='predictData';
+		sort=1;
+		q={id: req.query.dev_id, timestamp:{$gte: get_time_server()}};
+	}
+	const c = req.app.get('db').collection(coll);
+
+	c.find(q).limit(Math.abs(len)).sort({timestamp:sort})
+		.toArray().then((documents) => {
+		documents.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+		
+		res.json(documents);
+	}).catch((error) => {
+		console.error("Error fetching documents:");
+	})
+});
+
 router.get('/get_data_inrange', function (req, res) {
 	var devid=req.query.dev_id;
 	var t1=req.query.t1;
