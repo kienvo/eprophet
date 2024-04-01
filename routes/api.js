@@ -64,7 +64,6 @@ router.post('/post/hardware_data', (req, res) => {
 				localtime: new Date(data.localtime),
 				timestamp: new Date(get_time_server())
 			}
-			console.log(req.app.get('db'))
 			req.app.get('db')
 				.collection('deviceData').insertOne(data1);
 		}
