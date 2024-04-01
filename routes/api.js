@@ -71,7 +71,7 @@ router.post('/post/hardware_data', (req, res) => {
 	}
 });
 
-router.get('/get_latest_data', function (req, res) {
+router.get('/latest', function (req, res) {
 	var devid=req.query.dev_id;
 	var length=req.query.length;
 	if(devid && length){
@@ -166,7 +166,7 @@ router.get('/raw', function (req, res)
 	})
 });
 
-router.get('/get_data_inrange', function (req, res) {
+router.get('/inrange', function (req, res) {
 	var devid=req.query.dev_id;
 	var t1=req.query.t1;
 	var t2=req.query.t2;
@@ -202,7 +202,7 @@ router.get('/get_data_inrange', function (req, res) {
 	}
 });
 
-router.get('/get_all_data', function (req, res) {
+router.get('/all', function (req, res) {
 	var devid=req.query.dev_id;
 	if(devid){
 		var qquery={id: devid};
