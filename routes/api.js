@@ -42,7 +42,7 @@ function get_time_server() {
 
 router.post('/post/hardware_data', (req, res) => {
 	const data = req.body;
-	if (data.id && data.U && data.I && data.P && data.lux && data.localtime) {
+	if (data.dev_id && data.U && data.I && data.P && data.lux && data.localtime) {
 		console.log("Dữ liệu nhận được:", data);
 		res.json({ message: "Dữ liệu đã được nhận thành công!" });
 
@@ -54,13 +54,13 @@ router.post('/post/hardware_data', (req, res) => {
 			console.log("Dữ liệu lux bất thường")
 		} else {
 			data1={
-				id: data.id,
+				dev_id: data.dev_id,
 				U: data.U,
 				I: data.I,
 				P: data.P,
 				lux: data.lux,
-				localtime: data.localtime,
-				timestamp: get_time_server()
+				localtime: new Date(data.localtime),
+				timestamp: new Date(get_time_server())
 			}
 			console.log(req.app.get('db'))
 			req.app.get('db')
@@ -78,14 +78,14 @@ router.get('/latest', function (req, res) {
 		length=parseInt(length, 10);
 		var name_collection='';
 		var time_sort=0;
-		var qquery={id: devid};
+		var qquery={dev_id: devid};
 		if(length<0){
 			name_collection='deviceData';
 			time_sort=-1;
 		}else{
 			name_collection='predictData';
 			time_sort=1;
-			qquery={id: devid, timestamp:{$gte: get_time_server()}};
+			qquery={dev_id: devid, timestamp:{$gte: get_time_server()}};
 		}
 		const c = req.app.get('db').collection(name_collection);
 
@@ -145,14 +145,14 @@ router.get('/raw', function (req, res)
 
 	var coll='';
 	var sort=0;
-	var q={id: req.query.dev_id};
+	var q={dev_id: req.query.dev_id};
 	if(len<0){
 		coll='deviceData';
 		sort=-1;
 	}else{
 		coll='predictData';
 		sort=1;
-		q={id: req.query.dev_id, timestamp:{$gte: get_time_server()}};
+		q={dev_id: req.query.dev_id, timestamp:{$gte: get_time_server()}};
 	}
 	const c = req.app.get('db').collection(coll);
 
@@ -171,7 +171,7 @@ router.get('/inrange', function (req, res) {
 	var t1=req.query.t1;
 	var t2=req.query.t2;
 	if(devid && t1 && t2){
-		var qquery={id: devid,timestamp:{$gte: new Date(t1), $lt:new Date(t2)}};
+		var qquery={dev_id: devid,timestamp:{$gte: new Date(t1), $lt:new Date(t2)}};
 		const c = req.app.get('db').collection('deviceData');
 
 		c.find(qquery).sort({timestamp:1}).toArray().then((documents) => {
@@ -205,7 +205,7 @@ router.get('/inrange', function (req, res) {
 router.get('/all', function (req, res) {
 	var devid=req.query.dev_id;
 	if(devid){
-		var qquery={id: devid};
+		var qquery={dev_id: devid};
 		const c = req.app.get('db').collection('deviceData');
 
 		c.find(qquery).sort({timestamp:1}).toArray().then((documents) => {
