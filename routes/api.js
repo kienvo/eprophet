@@ -1,6 +1,8 @@
 var express = require('express');
 var router = express.Router();
 
+var cors = require('cors');
+
 router.use('/', function (req, res, next) {
 	// var key = req.query['api-key'];
 
@@ -71,7 +73,7 @@ router.post('/post/hardware_data', (req, res) => {
 	}
 });
 
-router.get('/latest', function (req, res) {
+router.get('/latest', cors(), function (req, res) {
 	var devid=req.query.dev_id;
 	var length=req.query.length;
 	if(devid && length){
@@ -119,7 +121,7 @@ router.get('/latest', function (req, res) {
 });
 
 
-router.get('/raw', function (req, res) 
+router.get('/raw', cors(), function (req, res) 
 {
 	if (!req.query.dev_id) {
 		res.status(400).json({ error: "Missing dev_id" });
@@ -166,7 +168,7 @@ router.get('/raw', function (req, res)
 	})
 });
 
-router.get('/inrange', function (req, res) {
+router.get('/inrange', cors(), function (req, res) {
 	var devid=req.query.dev_id;
 	var t1=req.query.t1;
 	var t2=req.query.t2;
@@ -202,7 +204,7 @@ router.get('/inrange', function (req, res) {
 	}
 });
 
-router.get('/all', function (req, res) {
+router.get('/all', cors(), function (req, res) {
 	var devid=req.query.dev_id;
 	if(devid){
 		var qquery={dev_id: devid};
