@@ -45,35 +45,51 @@ router.post('/post/hardware_data', (req, res) => {
 	var data = req.body;
 
 	if (!data.dev_id) {
-		res.status(400).json({ msg: "Missing dev_id" });
+		msg = { msg: "Missing dev_id" };
+		console.log(msg);
+		res.status(400).json(msg);
 		return;
 	}
 	if (!data.U) {
-		res.status(400).json({ msg: "Missing voltage (U)" });
+		msg = { msg: "Missing voltage (U)" }
+		console.log(msg);
+		res.status(400).json(msg);
 		return;
 	}
 	if (!data.I) {
-		res.status(400).json({ msg: "Missing current (I)" });
+		msg = { msg: "Missing current (I)" }
+		console.log(msg);
+		res.status(400).json(msg);
 		return;
 	}
 	if (!data.lux) {
-		res.status(400).json({ msg: "Missing illuminance (lux)" });
+		msg = { msg: "Missing illuminance (lux)" }
+		console.log(msg);
+		res.status(400).json(msg);
 		return;
 	}
 	if (!data.localtime) {
-		res.status(400).json({ msg: "Missing local timestamp" });
+		msg = { msg: "Missing local timestamp" }
+		console.log(msg);
+		res.status(400).json(msg);
 		return;
 	}
 	if (data.U < 0 || data.U > 400) {
-		res.status(400).json({ msg: "Voltage should be in range 0-400" });
+		msg = { msg: "Voltage should be in range 0-400" }
+		console.log(msg);
+		res.status(400).json(msg);
 		return;
 	}
 	if (data.I < 0 || data.I > 1) {
-		res.status(400).json({ msg: "Current should be in range 0-1" });
+		msg = { msg: "Current should be in range 0-1" }
+		console.log(msg);
+		res.status(400).json(msg);
 		return;
 	}
 	if (data.lux < 0 || data.lux > 10000) {
-		res.status(400).json({ msg: "Voltage should be in range 0-10000" });
+		msg = { msg: "Voltage should be in range 0-10000" }
+		console.log(msg);
+		res.status(400).json(msg);
 		return;
 	}
 
