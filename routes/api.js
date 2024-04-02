@@ -88,7 +88,7 @@ router.post('/post/hardware_data', (req, res) => {
 		localtime: new Date(data.localtime),
 		timestamp: new Date(get_time_server())
 	}
-	res.status(400).json({ msg: "Data has been saved", data });
+	res.status(200).json({ msg: "Data has been saved", data });
 	req.app.get('db').collection('deviceData').insertOne(data)
 	.catch((error) => {
 		res.status(400).json({ msg: "Error occured when saving data" }, error);
