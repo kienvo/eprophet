@@ -44,32 +44,38 @@ function get_time_server() {
 router.post('/post/hardware_data', (req, res) => {
 	var data = req.body;
 
-	if (!data.dev_id) {
+	if ( !data.hasOwnProperty('dev_id') ) {
 		msg = { msg: "Missing dev_id" };
 		console.log(msg);
 		res.status(400).json(msg);
 		return;
 	}
-	if (!data.U) {
+	if ( !data.hasOwnProperty('U') ) {
 		msg = { msg: "Missing voltage (U)" }
 		console.log(msg);
 		res.status(400).json(msg);
 		return;
 	}
-	if (!data.I) {
+	if ( !data.hasOwnProperty('I') ) {
 		msg = { msg: "Missing current (I)" }
 		console.log(msg);
 		res.status(400).json(msg);
 		return;
 	}
-	if (!data.lux) {
+	if ( !data.hasOwnProperty('lux') ) {
 		msg = { msg: "Missing illuminance (lux)" }
 		console.log(msg);
 		res.status(400).json(msg);
 		return;
 	}
-	if (!data.localtime) {
+	if ( !data.hasOwnProperty('localtime') ) {
 		msg = { msg: "Missing local timestamp" }
+		console.log(msg);
+		res.status(400).json(msg);
+		return;
+	}
+	if (isNaN(data.U) && isNaN(data.I) && isNaN(data.P) && isNaN(data.lux)) {
+		msg = { msg: "U, I, P, lux should be a number" }
 		console.log(msg);
 		res.status(400).json(msg);
 		return;
