@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title></title>
+	<style>
+		* {
+			margin: 0;
+			padding: 0;
+			font-family: sans-serif;
+		}
+
+		.chartMenu {
+			width: 100vw;
+			height: 40px;
+			background: #1A1A1A;
+			color: rgba(54, 162, 235, 1);
+		}
+
+		.chartMenu p {
+			padding: 10px;
+			font-size: 20px;
+		}
+
+		.chartCard {
+			width: 100vw;
+			height: calc(100vh - 40px);
+			background: rgba(54, 162, 235, 0.2);
+			display: flex;
+			align-items: center;
+			justify-content: center;
+		}
+
+		.chartBox {
+			width: 1500px;
+			padding: 20px;
+			border-radius: 20px;
+			border: solid 3px rgba(54, 162, 235, 1);
+			background: white;
+		}
+	</style>
+</head>
+
+<body>
+	<div class="chartMenu">
+	</div>
+	<div class="chartCard">
+		<div class="chartBox">
+			<canvas id="myChart"></canvas>
+		</div>
+	</div>
+	<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+	<script src="https://cdn.jsdelivr.net/npm/luxon@^2"></script>
+	<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-luxon@^1"></script>
+
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/hammer.js/2.0.8/hammer.min.js" integrity="sha512-UXumZrZNiOwnTcZSHLOfcTs0aos2MzBWHXOHOuB0J/R44QB0dwY5JgfbvljXcklVf65Gc4El6RjZ+lnwd2az2g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-zoom/2.0.1/chartjs-plugin-zoom.min.js" integrity="sha512-wUYbRPLV5zs6IqvWd88HIqZU/b8TBx+I8LEioQ/UC0t5EMCLApqhIAnUg7EsAzdbhhdgW07TqYDdH3QEXRcPOQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+	
+	<script>
+		
+		fetch('http://rockwell.eproject.kienlab.com/api/raw?dev_id=D4:8A:FC:A5:ED:E0&length=-150')
+		// fetch('http://rockwell.eproject.kienlab.com/api/raw?dev_id=D4:8A:FC:99:66:68&length=-500')
+		.then(res => res.json())
+		.then(res => {
+			// console.log(res);
+			df = res
+			// setup 
+			const data = {
+				datasets: [{
+					// label: 'Lux',
+					label: 'Power',
+					// label: 'U',
+					// label: 'I',
+					data: df,
+					borderWidth: 1
+				}]
+			};
+
+			// config 
+			const config = {
+				type: 'line',
+				data,
+				options: {
+					parsing: {
+						xAxisKey: 'timestamp',
+						// yAxisKey: 'lux',
+						yAxisKey: 'P',
+						// yAxisKey: 'U',
+						// yAxisKey: 'I',
+					},
+					scales: {
+						x: {
+							type: 'time',
+							time: {
+							},
+							adapters: {
+								date: {
+									// FIXME: database should store utc+0 and this should be change to default
+									locale: 'us', 
+									zone: 'UTC+0'
+								}
+							},
+							offsetAfterAutoskip: true
+						},
+						y: {
+							beginAtZero: true
+						}
+					},
+					
+					plugins: {
+						zoom: {
+							pan: {
+								mode: 'x',
+								scaleMode: 'x',
+								enabled: true
+							},
+							limits: {
+								
+							},
+							zoom: {
+								mode: 'x',
+								scaleMode: 'x',
+								wheel: {
+									enabled: true
+								},
+								pinch: {
+									enabled: true
+								}
+							}
+						}
+					}
+				}
+			};
+
+			// render init block
+			const myChart = new Chart(
+				document.getElementById('myChart'),
+				config
+			);
+		})
+
+	</script>
+
+</body>
+
+</html>
