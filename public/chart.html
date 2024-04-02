@@ -46,7 +46,7 @@
 	</div>
 	<div class="chartCard">
 		<div class="chartBox">
-			<canvas id="myChart"></canvas>
+			<canvas id="powerChart"></canvas>
 		</div>
 	</div>
 	<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -58,24 +58,27 @@
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-zoom/2.0.1/chartjs-plugin-zoom.min.js" integrity="sha512-wUYbRPLV5zs6IqvWd88HIqZU/b8TBx+I8LEioQ/UC0t5EMCLApqhIAnUg7EsAzdbhhdgW07TqYDdH3QEXRcPOQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 	
 	<script>
-		const predDatareq = fetch('http://localhost:3000/api/raw?dev_id=AA:AB:AC:AD:AE:AF&length=50')
+		const baseUrl = '/api/raw'
+		const dev_id = 'D4:8A:FC:A5:ED:E0'
+		const devDataLen = 50
+		const predDataLen = 50
+		const dataLabel = 'Power (W)'
+		const yAxisKey = 'P' // data field
+		const xAxisKey = 'timestamp' // time field
+
+		const predDatareq = fetch(baseUrl+'?dev_id='+dev_id+'&length='+predDataLen)
 						.then(res => res.json())
-		const devDatareq = fetch('http://rockwell.eproject.kienlab.com/api/raw?dev_id=D4:8A:FC:A5:ED:E0&length=-50')
 		// fetch('http://rockwell.eproject.kienlab.com/api/raw?dev_id=D4:8A:FC:99:66:68&length=-500')
+		const devDatareq = fetch(baseUrl+'?dev_id='+dev_id+'&length=-'+devDataLen)
 		.then(res => res.json())
 
 		Promise.all([predDatareq, devDatareq])
 		.then(([predData, devData]) => {
-
 			// setup 
 			const data = {
 				datasets: [
-					{ // label: 'Lux',
-					label: 'Power',
-					// label: 'U',
-					// label: 'I',
-					data: devData, borderWidth: 1 },
-					{label: 'Predicted Power', data: [devData.at(-1)].concat(predData)}
+					{ label: dataLabel, data: devData, borderWidth: 1 },
+					{ label: 'Predicted' + dataLabel, data: [devData.at(-1)].concat(predData)}
 				]
 			};
 
@@ -85,11 +88,8 @@
 				data,
 				options: {
 					parsing: {
-						xAxisKey: 'timestamp',
-						// yAxisKey: 'lux',
-						yAxisKey: 'P',
-						// yAxisKey: 'U',
-						// yAxisKey: 'I',
+						xAxisKey: xAxisKey,
+						yAxisKey: yAxisKey,
 					},
 					scales: {
 						x: {
@@ -136,8 +136,8 @@
 			};
 
 			// render init block
-			const myChart = new Chart(
-				document.getElementById('myChart'),
+			const powerChart = new Chart(
+				document.getElementById('powerChart'),
 				config
 			);
 		})
