@@ -36,8 +36,6 @@
 		.chartBox {
 			width: 1500px;
 			padding: 20px;
-			border-radius: 20px;
-			border: solid 3px rgba(54, 162, 235, 1);
 			background: white;
 		}
 	</style>
@@ -60,23 +58,25 @@
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-zoom/2.0.1/chartjs-plugin-zoom.min.js" integrity="sha512-wUYbRPLV5zs6IqvWd88HIqZU/b8TBx+I8LEioQ/UC0t5EMCLApqhIAnUg7EsAzdbhhdgW07TqYDdH3QEXRcPOQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 	
 	<script>
-		
-		fetch('http://rockwell.eproject.kienlab.com/api/raw?dev_id=D4:8A:FC:A5:ED:E0&length=-150')
+		const predDatareq = fetch('http://localhost:3000/api/raw?dev_id=AA:AB:AC:AD:AE:AF&length=50')
+						.then(res => res.json())
+		const devDatareq = fetch('http://rockwell.eproject.kienlab.com/api/raw?dev_id=D4:8A:FC:A5:ED:E0&length=-50')
 		// fetch('http://rockwell.eproject.kienlab.com/api/raw?dev_id=D4:8A:FC:99:66:68&length=-500')
 		.then(res => res.json())
-		.then(res => {
-			// console.log(res);
-			df = res
+
+		Promise.all([predDatareq, devDatareq])
+		.then(([predData, devData]) => {
+
 			// setup 
 			const data = {
-				datasets: [{
-					// label: 'Lux',
+				datasets: [
+					{ // label: 'Lux',
 					label: 'Power',
 					// label: 'U',
 					// label: 'I',
-					data: df,
-					borderWidth: 1
-				}]
+					data: devData, borderWidth: 1 },
+					{label: 'Predicted Power', data: [devData.at(-1)].concat(predData)}
+				]
 			};
 
 			// config 
