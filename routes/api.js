@@ -38,38 +38,63 @@ function get_time_server() {
 	const mlsc = svt.getTime();
 	// Create a new Date object for UTC+7
 	const nt = new Date(mlsc + 3600000 * 7);
-	console.log("Server time: ", nt)
 	return nt;
 }
 
 router.post('/post/hardware_data', (req, res) => {
-	const data = req.body;
-	if (data.dev_id && data.U && data.I && data.P && data.lux && data.localtime) {
-		console.log("Dữ liệu nhận được:", data);
-		res.json({ message: "Dữ liệu đã được nhận thành công!" });
+	var data = req.body;
 
-		if (data.U < 0 || data.U > 300) {
-			console.log("Dữ liệu U bất thường")
-		} else if (data.I < 0 || data.I > 1) {
-			console.log("Dữ liệu I bất thường")
-		} else if (data.lux < 0 || data.lux > 10000) {
-			console.log("Dữ liệu lux bất thường")
-		} else {
-			data1={
-				dev_id: data.dev_id,
-				U: data.U,
-				I: data.I,
-				P: data.P,
-				lux: data.lux,
-				localtime: new Date(data.localtime),
-				timestamp: new Date(get_time_server())
-			}
-			req.app.get('db')
-				.collection('deviceData').insertOne(data1);
-		}
-	} else {
-		res.status(400).json({ error: "Dữ liệu không đúng định dạng" });
+	if (!data.dev_id) {
+		res.status(400).json({ msg: "Missing dev_id" });
+		return;
 	}
+	if (!data.U) {
+		res.status(400).json({ msg: "Missing voltage (U)" });
+		return;
+	}
+	if (!data.I) {
+		res.status(400).json({ msg: "Missing current (I)" });
+		return;
+	}
+	if (!data.lux) {
+		res.status(400).json({ msg: "Missing illuminance (lux)" });
+		return;
+	}
+	if (!data.localtime) {
+		res.status(400).json({ msg: "Missing local timestamp" });
+		return;
+	}
+	if (data.U < 0 || data.U > 400) {
+		res.status(400).json({ msg: "Voltage should be in range 0-400" });
+		return;
+	}
+	if (data.I < 0 || data.I > 1) {
+		res.status(400).json({ msg: "Current should be in range 0-1" });
+		return;
+	}
+	if (data.lux < 0 || data.lux > 10000) {
+		res.status(400).json({ msg: "Voltage should be in range 0-10000" });
+		return;
+	}
+
+	console.log("raw received: ", JSON.stringify(data));
+	
+	data = {
+		dev_id: data.dev_id,
+		U: data.U,
+		I: data.I,
+		P: data.P,
+		lux: data.lux,
+		localtime: new Date(data.localtime),
+		timestamp: new Date(get_time_server())
+	}
+	res.status(400).json({ msg: "Data has been saved", data });
+	req.app.get('db').collection('deviceData').insertOne(data)
+	.catch((error) => {
+		res.status(400).json({ msg: "Error occured when saving data" }, error);
+		return;
+	})
+
 });
 
 router.get('/latest', cors(), function (req, res) {
