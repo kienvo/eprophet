@@ -43,38 +43,10 @@ function get_time_server() {
 }
 
 router.post('/post/hardware_data', (req, res) => {
-	var data = req.body;
+	var data = req.body
+	if ( isMissing(["dev_id", "U", "I", "P", "lux", "localtime"], req.body, res) ) 
+		return;
 
-	if ( !data.hasOwnProperty('dev_id') ) {
-		msg = { msg: "Missing dev_id" };
-		console.log(msg);
-		res.status(400).json(msg);
-		return;
-	}
-	if ( !data.hasOwnProperty('U') ) {
-		msg = { msg: "Missing voltage (U)" }
-		console.log(msg);
-		res.status(400).json(msg);
-		return;
-	}
-	if ( !data.hasOwnProperty('I') ) {
-		msg = { msg: "Missing current (I)" }
-		console.log(msg);
-		res.status(400).json(msg);
-		return;
-	}
-	if ( !data.hasOwnProperty('lux') ) {
-		msg = { msg: "Missing illuminance (lux)" }
-		console.log(msg);
-		res.status(400).json(msg);
-		return;
-	}
-	if ( !data.hasOwnProperty('localtime') ) {
-		msg = { msg: "Missing local timestamp" }
-		console.log(msg);
-		res.status(400).json(msg);
-		return;
-	}
 	if (isNaN(data.U) && isNaN(data.I) && isNaN(data.P) && isNaN(data.lux)) {
 		msg = { msg: "U, I, P, lux should be a number" }
 		console.log(msg);
@@ -170,20 +142,9 @@ router.get('/latest', cors(), function (req, res) {
 
 router.get('/raw', cors(), function (req, res) 
 {
-	if (!req.query.dev_id) {
-		res.status(400).json({ error: "Missing dev_id" });
-		return;
-	}
+	if ( isMissing(["dev_id", "length"], req.query, res) ) return;
 	if (req.query.dev_id.length != 17) {
 		res.status(400).json({ error: "dev_id should be a mac address" });
-		return;
-	}
-	if (!req.query.length) {
-		res.status(400).json({ error: "Missing length" });
-		return;
-	}
-	if (!req.query.length) {
-		res.status(400).json({ error: "Missing length" });
 		return;
 	}
 	len=parseInt(req.query.length, 10);
@@ -217,9 +178,11 @@ router.get('/raw', cors(), function (req, res)
 
 const isMissing = (keys, obj, res) => {
 	for (const k of keys) {
-		if (! Object.keys(obj).includes(k)) {
-			res.status(400).json({ msg : "Missing " + k});
+		if (! Object.keys(obj).includes(k)) {			
+			msg = { msg : "Missing " + k};
+			res.status(400).json(msg);
 			res.end()
+			console.log(msg);
 			return true
 		}
 	}
@@ -228,7 +191,7 @@ const isMissing = (keys, obj, res) => {
 
 const isDateValid = (dateStr) => {
 	return !isNaN(new Date(dateStr));
-  }
+}
 
 router.get('/consum', cors(), function (req, res) 
 {
