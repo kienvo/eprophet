@@ -2,6 +2,7 @@ var express = require('express');
 var router = express.Router();
 
 var cors = require('cors');
+const { MongoNetworkError } = require('mongodb');
 
 router.use('/', function (req, res, next) {
 	// var key = req.query['api-key'];
@@ -211,6 +212,80 @@ router.get('/raw', cors(), function (req, res)
 		res.json(documents);
 	}).catch((error) => {
 		console.error("Error fetching documents:");
+	})
+});
+
+const isMissing = (keys, obj, res) => {
+	for (const k of keys) {
+		if (! Object.keys(obj).includes(k)) {
+			res.status(400).json({ msg : "Missing " + k});
+			res.end()
+			return true
+		}
+	}
+	return false
+}
+
+const isDateValid = (dateStr) => {
+	return !isNaN(new Date(dateStr));
+  }
+
+router.get('/consum', cors(), function (req, res) 
+{
+	if ( isMissing(["dev_id", "d1", "d2"], req.query, res) ) return;
+	
+	if (req.query.dev_id.length != 17) {
+		res.status(400).json({ error: "dev_id should be a mac address" });
+		return;
+	}
+	if ( ! isDateValid(req.query.d1)) {
+		res.status(400).json({ error: "d1 is not a valid date. It should in ISO format" });
+		return;
+	}
+	if ( ! isDateValid(req.query.d2)) {
+		res.status(400).json({ error: "d2 is not a valid date. It should in ISO format" });
+		return;
+	}
+
+	const q = [{
+		$match: {
+			dev_id: req.query.dev_id,
+			timestamp: {
+				$gte: new Date(new Date(req.query.d1).toDateString()),
+				$lt: new Date(new Date(req.query.d2).toDateString())
+			}
+		}
+	}, {
+		$group: {
+			_id: {
+				$dateToString: { format: "%Y-%m-%d", date: "$timestamp" }
+			}, consumption: {
+				$sum: '$P'
+			}, nsample: {
+				$sum: 1
+			}
+		}
+	}, {
+		$sort: {_id: 1}
+	}, { 
+		$project: {
+			_id: 0,
+			date: '$_id',
+			nsample: 1,
+			// sum/(<minute of a day>/<number of sample in that day>)
+			consumption: {
+				$divide: ['$consumption', { $divide: [1440, '$nsample'] }]
+			},
+			unit: 'Wh'
+		}
+	}]
+
+	const c = req.app.get('db').collection('deviceData')
+	c.aggregate(q).toArray().then((d) => {		
+		res.json(d);
+	}).catch((error) => {
+		res.status(400).json({ error: "Error fetching documents:" });
+		console.error("Error fetching documents:", error);
 	})
 });
 
