@@ -215,7 +215,7 @@ router.get('/consum', cors(), function (req, res)
 			dev_id: req.query.dev_id,
 			timestamp: {
 				$gte: new Date(new Date(req.query.d1).toDateString()),
-				$lt: new Date(new Date(req.query.d2).toDateString())
+				$lte: new Date(new Date(req.query.d2).toDateString())
 			}
 		}
 	}, {
