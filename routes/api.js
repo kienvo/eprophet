@@ -210,12 +210,14 @@ router.get('/consum', cors(), function (req, res)
 		return;
 	}
 
+	const from = new Date(new Date(req.query.d1).toDateString() + ' 00:00:00 UTC+0')
+	const to = new Date(new Date(req.query.d2).toDateString() + ' 00:00:00 UTC+0')
 	const q = [{
 		$match: {
 			dev_id: req.query.dev_id,
 			timestamp: {
-				$gte: new Date(new Date(req.query.d1).toDateString()),
-				$lte: new Date(new Date(req.query.d2).toDateString())
+				$gte: from,
+				$lt: to
 			}
 		}
 	}, {
