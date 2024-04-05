@@ -60,7 +60,7 @@
 	<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js"></script>
 
 	<script>
-		const baseUrl = 'http://rockwell.eproject.kienlab.com/api/raw'
+		const baseUrl = '/api/raw'
 		const dev_id = 'D4:8A:FC:A5:ED:E0'
 		const devDataLen = 50
 		const predDataLen = 50
@@ -79,12 +79,21 @@
 			// setup 
 			const data = {
 				datasets: [
-					{ label: dataLabel, data: devData, borderWidth: 1 },
-					{ label: 'Predicted' + dataLabel, data: [devData.at(-1)].concat(predData)}
+					{ 
+						label: dataLabel, 
+						data: devData, 
+						lineTension: 0.4,
+						borderColor: '#009dff'
+					}, { 
+						label: 'Predicted' + dataLabel, 
+						data: [devData.at(-1)].concat(predData), 
+						lineTension: 0.4,
+						borderColor: '#00ff4c',
+					}
 				]
 			};
 			
-			const annotation = {
+			const now_anotate = {
 				type: 'line',
 				borderColor: 'black',
 				borderWidth: 1,
@@ -97,6 +106,25 @@
 				scaleID: 'x',
 				value: devData.at(-1).timestamp
 			};
+
+			const abnomal_anotate = {
+				type: 'box',
+				xMin: devData.at(Math.floor(devDataLen/3)).timestamp,
+				xMax: devData.at(Math.floor(devDataLen*2/3)).timestamp,
+				// yMin: 0,
+				// yMax: 100,
+				backgroundColor: 'rgba(250, 0, 0, 0.2)',
+				borderColor: 'rgba(250, 0, 0, 1)',
+				drawTime: 'beforeDatasetsDraw',
+				borderWidth: 2,
+				borderRadius: 0,
+				label: {
+					display: true,
+					content: 'Abnormal points',
+					position: 'start'
+				}
+			};
+
 			// config 
 			const config = {
 				type: 'line',
@@ -149,7 +177,8 @@
 
 						annotation: {
 							annotations: {
-								annotation
+								now_anotate,
+								abnomal_anotate
 							}
 						}
 					}
