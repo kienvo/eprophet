@@ -57,18 +57,20 @@
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/hammer.js/2.0.8/hammer.min.js" integrity="sha512-UXumZrZNiOwnTcZSHLOfcTs0aos2MzBWHXOHOuB0J/R44QB0dwY5JgfbvljXcklVf65Gc4El6RjZ+lnwd2az2g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-zoom/2.0.1/chartjs-plugin-zoom.min.js" integrity="sha512-wUYbRPLV5zs6IqvWd88HIqZU/b8TBx+I8LEioQ/UC0t5EMCLApqhIAnUg7EsAzdbhhdgW07TqYDdH3QEXRcPOQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 	
+	<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js"></script>
+
 	<script>
-		const baseUrl = '/api/raw'
+		const baseUrl = 'http://rockwell.eproject.kienlab.com/api/raw'
 		const dev_id = 'D4:8A:FC:A5:ED:E0'
 		const devDataLen = 50
 		const predDataLen = 50
 		const dataLabel = 'Power (W)'
 		const yAxisKey = 'P' // data field
 		const xAxisKey = 'timestamp' // time field
+		const ctx = document.getElementById('powerChart')
 
 		const predDatareq = fetch(baseUrl+'?dev_id='+dev_id+'&length='+predDataLen)
 						.then(res => res.json())
-		// fetch('http://rockwell.eproject.kienlab.com/api/raw?dev_id=D4:8A:FC:99:66:68&length=-500')
 		const devDatareq = fetch(baseUrl+'?dev_id='+dev_id+'&length=-'+devDataLen)
 		.then(res => res.json())
 
@@ -81,7 +83,20 @@
 					{ label: 'Predicted' + dataLabel, data: [devData.at(-1)].concat(predData)}
 				]
 			};
-
+			
+			const annotation = {
+				type: 'line',
+				borderColor: 'black',
+				borderWidth: 1,
+				display: (ctx) => ctx.chart.isDatasetVisible(1),
+				label: {
+					display: true,
+					content: 'Now',
+					position: 'start'
+				},
+				scaleID: 'x',
+				value: devData.at(-1).timestamp
+			};
 			// config 
 			const config = {
 				type: 'line',
@@ -130,6 +145,12 @@
 									enabled: true
 								}
 							}
+						}, 
+
+						annotation: {
+							annotations: {
+								annotation
+							}
 						}
 					}
 				}
@@ -137,7 +158,7 @@
 
 			// render init block
 			const powerChart = new Chart(
-				document.getElementById('powerChart'),
+				ctx,
 				config
 			);
 		})
