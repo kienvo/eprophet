@@ -60,7 +60,7 @@
 	<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js"></script>
 
 	<script>
-		const baseUrl = '/api/raw'
+		const baseUrl = 'http://rockwell.eproject.kienlab.com/api/raw'
 		const dev_id = 'D4:8A:FC:A5:ED:E0'
 		const devDataLen = 50
 		const predDataLen = 50
@@ -82,13 +82,17 @@
 					{ 
 						label: dataLabel, 
 						data: devData, 
-						lineTension: 0.4,
-						borderColor: '#009dff'
+						lineTension: 0.2,
+						borderColor: '#009dff',
+						backgroundColor: '#009dff7f',
+						fill: true, 
 					}, { 
-						label: 'Predicted' + dataLabel, 
+						label: 'Predicted' + dataLabel,
 						data: [devData.at(-1)].concat(predData), 
-						lineTension: 0.4,
+						lineTension: 0.2,
 						borderColor: '#00ff4c',
+						backgroundColor: '#00ff4c7f',
+						fill: true, 
 					}
 				]
 			};
