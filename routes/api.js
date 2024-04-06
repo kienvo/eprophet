@@ -212,8 +212,6 @@ router.get('/consum', cors(), function (req, res)
 
 	const from = new Date(new Date(req.query.d1).toDateString() + ' 00:00:00 UTC+0')
 	const to = new Date(new Date(req.query.d2).toDateString() + ' 23:59:59 UTC+0')
-	console.log(from)
-	console.log(to)
 	const q = [{
 		$match: {
 			dev_id: req.query.dev_id,
