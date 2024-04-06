@@ -2,6 +2,7 @@ var express = require('express');
 var router = express.Router();
 
 var cors = require('cors');
+const { MongoNetworkError } = require('mongodb');
 
 router.use('/', function (req, res, next) {
 	// var key = req.query['api-key'];
@@ -42,38 +43,10 @@ function get_time_server() {
 }
 
 router.post('/post/hardware_data', (req, res) => {
-	var data = req.body;
+	var data = req.body
+	if ( isMissing(["dev_id", "U", "I", "P", "lux", "localtime"], req.body, res) ) 
+		return;
 
-	if ( !data.hasOwnProperty('dev_id') ) {
-		msg = { msg: "Missing dev_id" };
-		console.log(msg);
-		res.status(400).json(msg);
-		return;
-	}
-	if ( !data.hasOwnProperty('U') ) {
-		msg = { msg: "Missing voltage (U)" }
-		console.log(msg);
-		res.status(400).json(msg);
-		return;
-	}
-	if ( !data.hasOwnProperty('I') ) {
-		msg = { msg: "Missing current (I)" }
-		console.log(msg);
-		res.status(400).json(msg);
-		return;
-	}
-	if ( !data.hasOwnProperty('lux') ) {
-		msg = { msg: "Missing illuminance (lux)" }
-		console.log(msg);
-		res.status(400).json(msg);
-		return;
-	}
-	if ( !data.hasOwnProperty('localtime') ) {
-		msg = { msg: "Missing local timestamp" }
-		console.log(msg);
-		res.status(400).json(msg);
-		return;
-	}
 	if (isNaN(data.U) && isNaN(data.I) && isNaN(data.P) && isNaN(data.lux)) {
 		msg = { msg: "U, I, P, lux should be a number" }
 		console.log(msg);
@@ -169,20 +142,9 @@ router.get('/latest', cors(), function (req, res) {
 
 router.get('/raw', cors(), function (req, res) 
 {
-	if (!req.query.dev_id) {
-		res.status(400).json({ error: "Missing dev_id" });
-		return;
-	}
+	if ( isMissing(["dev_id", "length"], req.query, res) ) return;
 	if (req.query.dev_id.length != 17) {
 		res.status(400).json({ error: "dev_id should be a mac address" });
-		return;
-	}
-	if (!req.query.length) {
-		res.status(400).json({ error: "Missing length" });
-		return;
-	}
-	if (!req.query.length) {
-		res.status(400).json({ error: "Missing length" });
 		return;
 	}
 	len=parseInt(req.query.length, 10);
@@ -212,6 +174,104 @@ router.get('/raw', cors(), function (req, res)
 	}).catch((error) => {
 		console.error("Error fetching documents:");
 	})
+});
+
+const isMissing = (keys, obj, res) => {
+	for (const k of keys) {
+		if (! Object.keys(obj).includes(k)) {			
+			msg = { msg : "Missing " + k};
+			res.status(400).json(msg);
+			res.end()
+			console.log(msg);
+			return true
+		}
+	}
+	return false
+}
+
+const isDateValid = (dateStr) => {
+	return !isNaN(new Date(dateStr));
+}
+
+const qconsum = (q) => { return [{
+	$match: {
+		dev_id: q.dev_id,
+		timestamp: {
+			$gte: new Date(new Date(q.d1).toDateString() + ' 00:00:00 UTC+0'),
+			$lte: new Date(new Date(q.d2).toDateString() + ' 23:59:59 UTC+0')
+		}
+	}
+}, {
+	$group: {
+		_id: {
+			$dateToString: { format: "%Y-%m-%d", date: "$timestamp" }
+		}, consumption: {
+			$sum: '$P'
+		}, nsample: {
+			$sum: 1
+		}
+	}
+}, {
+	$sort: {_id: 1}
+}, { 
+	$project: {
+		_id: 0,
+		date: '$_id',
+		nsample: 1,
+		// sum/(<minute of a day>/<number of sample in that day>)
+		consumption: {
+			$divide: ['$consumption', { $divide: [1440, '$nsample'] }]
+		},
+		unit: 'Wh'
+	}
+}]}
+
+const dbquery = (coll, query, res) => {
+	coll.aggregate(query).toArray().then((d) => {		
+		res.json(d);
+	}).catch((error) => {
+		res.status(400).json({ error: "Error fetching documents:" });
+		console.error("Error fetching documents:", error);
+	})
+}
+
+router.get('/consum', cors(), function (req, res) 
+{
+	if ( isMissing(["dev_id", "d1", "d2"], req.query, res) ) return;
+	
+	if (req.query.dev_id.length != 17) {
+		res.status(400).json({ error: "dev_id should be a mac address" });
+		return;
+	}
+	if ( ! isDateValid(req.query.d1)) {
+		res.status(400).json({ error: "d1 is not a valid date. It should in ISO format" });
+		return;
+	}
+	if ( ! isDateValid(req.query.d2)) {
+		res.status(400).json({ error: "d2 is not a valid date. It should in ISO format" });
+		return;
+	}
+	dbquery(req.app.get('db').collection('deviceData'), qconsum(req.query), res)
+});
+
+router.get('/consum-fc', cors(), function (req, res) 
+{
+	if ( isMissing(["dev_id", "d1", "d2"], req.query, res) ) return;
+	
+	if (req.query.dev_id.length != 17) {
+		res.status(400).json({ error: "dev_id should be a mac address" });
+		return;
+	}
+	if ( ! isDateValid(req.query.d1)) {
+		res.status(400).json({ error: "d1 is not a valid date. It should in ISO format" });
+		return;
+	}
+	if ( ! isDateValid(req.query.d2)) {
+		res.status(400).json({ error: "d2 is not a valid date. It should in ISO format" });
+		return;
+	}
+
+	dbquery(req.app.get('db').collection('predictData'), qconsum(req.query), res)
 });
 
 router.get('/inrange', cors(), function (req, res) {
