@@ -193,6 +193,39 @@ const isDateValid = (dateStr) => {
 	return !isNaN(new Date(dateStr));
 }
 
+const qconsum = (q) => { return [{
+	$match: {
+		dev_id: q.dev_id,
+		timestamp: {
+			$gte: new Date(new Date(q.d1).toDateString() + ' 00:00:00 UTC+0'),
+			$lte: new Date(new Date(q.d2).toDateString() + ' 23:59:59 UTC+0')
+		}
+	}
+}, {
+	$group: {
+		_id: {
+			$dateToString: { format: "%Y-%m-%d", date: "$timestamp" }
+		}, consumption: {
+			$sum: '$P'
+		}, nsample: {
+			$sum: 1
+		}
+	}
+}, {
+	$sort: {_id: 1}
+}, { 
+	$project: {
+		_id: 0,
+		date: '$_id',
+		nsample: 1,
+		// sum/(<minute of a day>/<number of sample in that day>)
+		consumption: {
+			$divide: ['$consumption', { $divide: [1440, '$nsample'] }]
+		},
+		unit: 'Wh'
+	}
+}]}
+
 router.get('/consum', cors(), function (req, res) 
 {
 	if ( isMissing(["dev_id", "d1", "d2"], req.query, res) ) return;
@@ -210,43 +243,34 @@ router.get('/consum', cors(), function (req, res)
 		return;
 	}
 
-	const from = new Date(new Date(req.query.d1).toDateString() + ' 00:00:00 UTC+0')
-	const to = new Date(new Date(req.query.d2).toDateString() + ' 23:59:59 UTC+0')
-	const q = [{
-		$match: {
-			dev_id: req.query.dev_id,
-			timestamp: {
-				$gte: from,
-				$lte: to
-			}
-		}
-	}, {
-		$group: {
-			_id: {
-				$dateToString: { format: "%Y-%m-%d", date: "$timestamp" }
-			}, consumption: {
-				$sum: '$P'
-			}, nsample: {
-				$sum: 1
-			}
-		}
-	}, {
-		$sort: {_id: 1}
-	}, { 
-		$project: {
-			_id: 0,
-			date: '$_id',
-			nsample: 1,
-			// sum/(<minute of a day>/<number of sample in that day>)
-			consumption: {
-				$divide: ['$consumption', { $divide: [1440, '$nsample'] }]
-			},
-			unit: 'Wh'
-		}
-	}]
-
 	const c = req.app.get('db').collection('deviceData')
-	c.aggregate(q).toArray().then((d) => {		
+	c.aggregate(qconsum(req.query)).toArray().then((d) => {		
+		res.json(d);
+	}).catch((error) => {
+		res.status(400).json({ error: "Error fetching documents:" });
+		console.error("Error fetching documents:", error);
+	})
+});
+
+router.get('/consum-fc', cors(), function (req, res) 
+{
+	if ( isMissing(["dev_id", "d1", "d2"], req.query, res) ) return;
+	
+	if (req.query.dev_id.length != 17) {
+		res.status(400).json({ error: "dev_id should be a mac address" });
+		return;
+	}
+	if ( ! isDateValid(req.query.d1)) {
+		res.status(400).json({ error: "d1 is not a valid date. It should in ISO format" });
+		return;
+	}
+	if ( ! isDateValid(req.query.d2)) {
+		res.status(400).json({ error: "d2 is not a valid date. It should in ISO format" });
+		return;
+	}
+
+	const c = req.app.get('db').collection('predictData')
+	c.aggregate(qconsum(req.query)).toArray().then((d) => {		
 		res.json(d);
 	}).catch((error) => {
 		res.status(400).json({ error: "Error fetching documents:" });
