@@ -240,15 +240,21 @@ router.get('/consum', cors(), function (req, res)
 	if ( isMissing(["dev_id", "d1", "d2"], req.query, res) ) return;
 	
 	if (req.query.dev_id.length != 17) {
-		res.status(400).json({ error: "dev_id should be a mac address" });
+		msg = { error: "dev_id should be a mac address" };
+		res.status(400).json(msg);
+		console.log(msg);
 		return;
 	}
 	if ( ! isDateValid(req.query.d1)) {
-		res.status(400).json({ error: "d1 is not a valid date. It should in ISO format" });
+		msg = { error: "d1 is not a valid date. It should in ISO format" }
+		res.status(400).json(msg);
+		console.log(msg);
 		return;
 	}
 	if ( ! isDateValid(req.query.d2)) {
-		res.status(400).json({ error: "d2 is not a valid date. It should in ISO format" });
+		msg = { error: "d2 is not a valid date. It should in ISO format" }
+		res.status(400).json(msg);
+		console.log(msg);
 		return;
 	}
 	dbquery(req.app.get('db').collection('deviceData'), qconsum(req.query), res)
@@ -259,15 +265,21 @@ router.get('/consum-fc', cors(), function (req, res)
 	if ( isMissing(["dev_id", "d1", "d2"], req.query, res) ) return;
 	
 	if (req.query.dev_id.length != 17) {
-		res.status(400).json({ error: "dev_id should be a mac address" });
+		msg = { error: "dev_id should be a mac address" };
+		res.status(400).json(msg);
+		console.log(msg);
 		return;
 	}
 	if ( ! isDateValid(req.query.d1)) {
-		res.status(400).json({ error: "d1 is not a valid date. It should in ISO format" });
+		msg = { error: "d1 is not a valid date. It should in ISO format" }
+		res.status(400).json(msg);
+		console.log(msg);
 		return;
 	}
 	if ( ! isDateValid(req.query.d2)) {
-		res.status(400).json({ error: "d2 is not a valid date. It should in ISO format" });
+		msg = { error: "d2 is not a valid date. It should in ISO format" }
+		res.status(400).json(msg);
+		console.log(msg);
 		return;
 	}
 
