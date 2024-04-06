@@ -226,6 +226,15 @@ const qconsum = (q) => { return [{
 	}
 }]}
 
+const dbquery = (coll, query, res) => {
+	coll.aggregate(query).toArray().then((d) => {		
+		res.json(d);
+	}).catch((error) => {
+		res.status(400).json({ error: "Error fetching documents:" });
+		console.error("Error fetching documents:", error);
+	})
+}
+
 router.get('/consum', cors(), function (req, res) 
 {
 	if ( isMissing(["dev_id", "d1", "d2"], req.query, res) ) return;
@@ -242,14 +251,7 @@ router.get('/consum', cors(), function (req, res)
 		res.status(400).json({ error: "d2 is not a valid date. It should in ISO format" });
 		return;
 	}
-
-	const c = req.app.get('db').collection('deviceData')
-	c.aggregate(qconsum(req.query)).toArray().then((d) => {		
-		res.json(d);
-	}).catch((error) => {
-		res.status(400).json({ error: "Error fetching documents:" });
-		console.error("Error fetching documents:", error);
-	})
+	dbquery(req.app.get('db').collection('deviceData'), qconsum(req.query), res)
 });
 
 router.get('/consum-fc', cors(), function (req, res) 
@@ -269,13 +271,7 @@ router.get('/consum-fc', cors(), function (req, res)
 		return;
 	}
 
-	const c = req.app.get('db').collection('predictData')
-	c.aggregate(qconsum(req.query)).toArray().then((d) => {		
-		res.json(d);
-	}).catch((error) => {
-		res.status(400).json({ error: "Error fetching documents:" });
-		console.error("Error fetching documents:", error);
-	})
+	dbquery(req.app.get('db').collection('predictData'), qconsum(req.query), res)
 });
 
 router.get('/inrange', cors(), function (req, res) {
