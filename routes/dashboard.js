@@ -1,5 +1,5 @@
 var express = require('express');
-var router = express.Router();
+var router = express.Router({ mergeParams: true });
 
 router.get('/', function(req, res, next) {
 	res.render('dashboard/dashboard', { 
@@ -7,7 +7,7 @@ router.get('/', function(req, res, next) {
 
 		pwChConfig: {
 			baseUrl: 'http://rockwell.eproject.kienlab.com/api/raw',
-			dev_id: 'D4:8A:FC:A5:ED:E0',
+			dev_id: req.params.dev_id,
 			devDataLen: 200,
 			predDataLen: 100,
 			dataLabel: 'Power (W)',
@@ -19,7 +19,7 @@ router.get('/', function(req, res, next) {
 		consumChConfig: {
 			predBaseUrl: 'http://rockwell.eproject.kienlab.com/api/consum-fc',
 			devBaseUrl: 'http://rockwell.eproject.kienlab.com/api/consum',
-			dev_id: 'D4:8A:FC:A5:ED:E0',
+			dev_id: req.params.dev_id,
 			chartTitle: "POWER CONSUMTION IN RECENT DATES",
 			dataLabel: 'Power Consumption (Wh)',
 			xAxisKey: 'consumption', // data field

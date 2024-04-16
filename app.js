@@ -7,9 +7,8 @@ var socketapi = require("./socketapi");
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
-var chartRouter = require('./routes/chart');
 var apiRouter = require('./routes/api');
-var dashboardRouter = require('./routes/dashboard');
+var devRouter = require('./routes/dev');
 
 var app = express();
 
@@ -25,9 +24,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
-app.use('/chart', chartRouter);
 app.use('/api', apiRouter);
-app.use('/dashboard', dashboardRouter);
+app.use('/dev', devRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
