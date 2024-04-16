@@ -6,6 +6,25 @@ router.get('/', function(req, res, next) {
 	next();
 });
 
+router.get('/consum', function(req, res, next) {
+	res.render('charts/consum', {
+		title: 'POWER CONSUMTION IN RECENT DATES',
+		chart: {
+			title: 'POWER CONSUMTION IN RECENT DATES'
+		}, 
+
+		consumChConfig: {
+			predBaseUrl: 'http://rockwell.eproject.kienlab.com/api/consum-fc',
+			devBaseUrl: 'http://rockwell.eproject.kienlab.com/api/consum',
+			dev_id: 'D4:8A:FC:A5:ED:E0',
+			chartTitle: "POWER CONSUMTION IN RECENT DATES",
+			dataLabel: 'Power Consumption (Wh)',
+			xAxisKey: 'consumption', // data field
+			yAxisKey: 'date', // time field
+		}
+	});
+});
+
 router.get('/power', function(req, res, next) {
 	res.render('charts/power', {
 		title: 'POWER',
