@@ -3,8 +3,6 @@ var router = express.Router({ mergeParams: true });
 
 router.get('/', function(req, res, next) {
 	res.render('dashboard/dashboard', { 
-		title: 'Dashboard' ,
-
 		pwChConfig: {
 			baseUrl: 'http://rockwell.eproject.kienlab.com/api/raw',
 			dev_id: req.params.dev_id,
@@ -26,14 +24,6 @@ router.get('/', function(req, res, next) {
 			yAxisKey: 'date', // time field
 		}
 	});
-});
-
-router.get('/consume', function(req, res, next) {
-	res.render('chart', { title: 'POWER CONSUMTION IN RECENT DATES' });
-});
-
-router.get('/power', function(req, res, next) {
-	res.render('chart', { title: 'Power' });
 });
 
 module.exports = router;
