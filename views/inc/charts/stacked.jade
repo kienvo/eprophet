@@ -1,0 +1,192 @@
+//- General stacked chart for data
+
+canvas#stackedChart
+
+script.
+	// url = new URL(window.location.href)
+	// url.searchParams.get('adsfsdf')
+	Promise.all([
+		fetch("#{pwChConfig.baseUrl}"+'?dev_id='+"#{pwChConfig.dev_id}"+'&length='+"#{pwChConfig.predDataLen}")
+			.then(res => res.json()),
+		fetch("#{pwChConfig.baseUrl}"+'?dev_id='+"#{pwChConfig.dev_id}"+'&length=-'+"#{pwChConfig.devDataLen}")
+			.then(res => res.json())
+	]).then(([predData, devData]) => {
+		// setup 
+		const data = {
+			labels: devData.map(o => o.timestamp),
+			datasets: [ 
+				{ 
+					label: "Illuminance (lux)",
+					data: devData.map(o => o.lux), 
+					lineTension: 0.2,
+					borderColor: '#0fbde9',
+					backgroundColor: '#0fbde97f',
+					fill: true, 
+					yAxisID: 'ylux',
+				},{ 
+					label: "Voltage (V)",
+					data: devData.map(o => o.U), 
+					lineTension: 0.2,
+					borderColor: '#9d47b6',
+					backgroundColor: '#9d47b67f',
+					fill: true, 
+					yAxisID: 'yvolt',
+				},{ 
+					label: "Current (A)",
+					data: devData.map(o => o.I), 
+					lineTension: 0.2,
+					borderColor: '#e6639b',
+					backgroundColor: '#e6639b7f',
+					fill: true, 
+					yAxisID: 'ycurrent',
+				},{ 
+					label: "Power (W)", 
+					data: devData.map(o => o.P), 
+					lineTension: 0.2,
+					borderColor: '#2f3bad',
+					backgroundColor: '#2f3bad7f',
+					fill: true, 
+				}, 
+			]
+		};
+		
+		const now_anotate = {
+			type: 'line',
+			borderColor: 'black',
+			borderWidth: 1,
+			display: (ctx) => ctx.chart.isDatasetVisible(1),
+			label: {
+				display: true,
+				content: 'Now',
+				position: 'start'
+			},
+			scaleID: 'x',
+			value: devData.at(-1).timestamp
+		};
+
+		const abnomal_anotate = {
+			type: 'box',
+			xMin: devData.at(Math.floor("#{pwChConfig.devDataLen}"/3)).timestamp,
+			xMax: devData.at(Math.floor("#{pwChConfig.devDataLen}"*2/3)).timestamp,
+			backgroundColor: 'rgba(250, 0, 0, 0.2)',
+			borderColor: 'rgba(250, 0, 0, 1)',
+			drawTime: 'afterDatasetsDraw',
+			borderWidth: 2,
+			borderRadius: 0,
+			label: {
+				display: true,
+				content: 'Abnormal points',
+				position: 'start'
+			},
+		};
+
+		// config 
+		const config = {
+			type: 'line',
+			data,
+			options: {
+				elements: {
+					point: {
+						pointRadius: 1.5
+					}
+				},
+				maintainAspectRatio: false,
+				scales: {
+					x: {
+						type: 'time',
+						time: {
+						},
+						adapters: {
+							date: {
+								// FIXME: database should store utc+0 and this should be change to default
+								locale: 'us', 
+								zone: 'UTC+0'
+							}
+						},
+						offsetAfterAutoskip: true
+					},
+					y: {
+						type: 'linear',
+						position: 'left',
+						stack: 'stacked',
+						grid: {
+							borderColor: 'red'
+						}
+					},
+					ycurrent: {
+						type: 'linear',
+						offset: true,
+						position: 'left',
+						stack: 'stacked',
+						grid: {
+							borderColor: 'blue'
+						}
+					},
+					yvolt: {
+						type: 'linear',
+						offset: true,
+						position: 'left',
+						stack: 'stacked',
+						grid: {
+							borderColor: 'blue'
+						}
+					},
+					ylux: {
+						type: 'linear',
+						offset: true,
+						position: 'left',
+						stack: 'stacked',
+						grid: {
+							borderColor: 'blue'
+						}
+					}
+				},
+				
+				plugins: {
+					zoom: {
+						pan: {
+							mode: 'x',
+							scaleMode: 'x',
+							enabled: true
+						},
+						limits: {
+							
+						},
+						zoom: {
+							mode: 'x',
+							scaleMode: 'x',
+							wheel: {
+								enabled: true
+							},
+							pinch: {
+								enabled: true
+							}
+						}
+					}, 
+
+					annotation: {
+						annotations: {
+							now_anotate,
+							abnomal_anotate
+						}
+					},
+					
+					title: {
+						display: true,
+						position: 'top',
+						text: "#{pwChConfig.chartTitle}",
+						padding: {
+							bottom: 0,
+							top: 0
+						}
+					}
+				}
+			}
+		};
+
+		// render init block
+		const stackedChart = new Chart(
+			document.getElementById('stackedChart'),
+			config
+		);
+	})
