@@ -2,7 +2,7 @@ var express = require('express');
 var router = express.Router({ mergeParams: true });
 
 router.get('/', function(req, res, next) {
-	// res.render('charts/', { title: 'Dashboard' });
+	res.status(400).json({ message: "Please specify which chart to display"});
 	next();
 });
 
