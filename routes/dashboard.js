@@ -3,6 +3,8 @@ var router = express.Router({ mergeParams: true });
 
 router.get('/', function(req, res, next) {
 	res.render('dashboard/dashboard', { 
+		title: 'Dashboard of device: ' + req.params.dev_id ,
+
 		pwChConfig: {
 			baseUrl: 'http://rockwell.eproject.kienlab.com/api/raw',
 			dev_id: req.params.dev_id,
