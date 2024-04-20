@@ -16,8 +16,19 @@ html
 				include sidebar
 			.col-md-3.col-xl-2
 			.col-md-9.col-xl-10
+			
+				.row
+					ul.nav.nav-tabs
+						each dev in devList
+								li.nav-item
+									a.nav-link(
+										class=(dev.isActive ? 'active' : '' ) 
+										aria-current = dev.isActive ? 'page' : false 
+										href='../#{dev.dev_id}/dashboard') #{dev.dev_id}
+				
 				.row(style="height:300px;")
 					block stackedChart
+
 				.row(style="padding-top: 30px;")
 					.col-md-3(style="height:400px;")
 						block consumChart

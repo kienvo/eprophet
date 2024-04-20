@@ -24,7 +24,12 @@ router.get('/', function(req, res, next) {
 			dataLabel: 'Power Consumption (Wh)',
 			xAxisKey: 'consumption', // data field
 			yAxisKey: 'date', // time field
-		}
+		}, 
+
+		devList: [
+			{dev_id: 'D4:8A:FC:A5:ED:E0', isActive: req.params.dev_id == 'D4:8A:FC:A5:ED:E0'},
+			{dev_id: 'D4:8A:FC:99:66:68', isActive: req.params.dev_id == 'D4:8A:FC:99:66:68'},
+		]
 	});
 });
 
