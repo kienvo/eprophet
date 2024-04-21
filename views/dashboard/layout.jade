@@ -24,13 +24,17 @@ html
 										aria-current = dev.isActive ? 'page' : false 
 										href='../#{dev.dev_id}/dashboard') #{dev.dev_id}
 				
-				.row(style="height:300px;")
+				.row.mb-5(style="height:300px;")
 					block stackedChart
 
-				.row(style="padding-top: 30px;")
-					.col-md-3(style="height:400px;")
+				.d-flex.justify-content-end
+					button.btn.btn-outline-primary.btn-sm.me-2 Run new forecast
+					button.btn.btn-outline-danger.btn-sm.me-2 Highlight abnormality
+
+				.row(style="height:400px;")
+					.col-md-3(style="height: inherit;")
 						block consumChart
-					.col-md-9(style="height:400px;")
+					.col-md-9(style="height: inherit;")
 						block powerChart
 		
 
