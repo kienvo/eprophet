@@ -15,14 +15,16 @@ html
 			.col-md-3.col-xl-2
 			.col-md-9.col-xl-10
 
-				.row
-					ul.nav.nav-tabs
+				.row.mb-5 
+					ul.nav.nav-tabs.d-flex 
 						each dev in devList
 								li.nav-item
 									a.nav-link(
 										class=(dev.isActive ? 'active' : '' ) 
 										aria-current = dev.isActive ? 'page' : false 
 										href='../#{dev.dev_id}/dashboard') #{dev.dev_id}
+						a.btn.bi.bi-plus-square.ms-auto(style='font-size: 25px; padding: 0px;' href='../add')
+
 				
 				.row.mb-5(style="height:300px;")
 					block stackedChart
