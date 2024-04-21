@@ -2,6 +2,7 @@ var express = require('express');
 var router = express.Router({ mergeParams: true });
 
 router.get('/', function(req, res, next) {
+	console.log(req.params)
 	res.render('dashboard/dashboard', { 
 		title: 'Dashboard of device: ' + req.params.dev_id ,
 
@@ -29,7 +30,8 @@ router.get('/', function(req, res, next) {
 		devList: [
 			{dev_id: 'D4:8A:FC:A5:ED:E0', isActive: req.params.dev_id == 'D4:8A:FC:A5:ED:E0'},
 			{dev_id: 'D4:8A:FC:99:66:68', isActive: req.params.dev_id == 'D4:8A:FC:99:66:68'},
-		]
+		],
+		username: req.user.username,
 	});
 });
 

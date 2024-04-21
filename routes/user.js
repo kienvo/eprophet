@@ -31,7 +31,14 @@ const restrict = (req, res, next) => {
 	}
 }
 
-router.use('/:username/dev', restrict, require('./dev'));
+router.use('/:username/dev', restrict, 
+(req, res, next) => {
+	req.user = {
+		username: req.params.username
+	}
+	next();
+}
+, require('./dev'));
 
 router.get('/', restrict,function(req, res, next) {
 	res.redirect('/user/diennhung/dev/D4:8A:FC:A5:ED:E0/dashboard'); // TODO: change this to dynamic

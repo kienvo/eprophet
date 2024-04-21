@@ -24,18 +24,16 @@ ul.nav.nav-pills.flex-column.mb-auto
 			i.bi-telephone.me-2
 			|  Contact
 hr
-.dropdown
-	a#dropdownUser2.d-flex.align-items-center.link-dark.text-decoration-none.dropdown-toggle(href='#' data-bs-toggle='dropdown' aria-expanded='false')
+.dropup
+	a#dropdownMenuButton.d-flex.align-items-center.link-dark.text-decoration-none.dropdown-toggle(href='#' data-bs-toggle='dropdown' aria-expanded='false')
 		img.rounded-circle.me-2(src='https://avatars.githubusercontent.com/u/52123562?v=4' alt='' width='32' height='32')
 		strong D. N. Nguyen
-	ul.dropdown-menu.text-small.shadow(aria-labelledby='dropdownUser2')
+	ul.dropdown-menu.text-small.shadow(aria-labelledby='dropdownMenuButton')
 		li
-			a.dropdown-item(href='#') New project...
+			a.dropdown-item(href='/user/#{username}/settings') Settings
 		li
-			a.dropdown-item(href='#') Settings
-		li
-			a.dropdown-item(href='#') Profile
+			a.dropdown-item(href='/user/#{username}') Profile
 		li
 			hr.dropdown-divider
 		li
-			a.dropdown-item(href='#') Sign out
+			a.dropdown-item(href='/user/logout') Sign out
