@@ -1,0 +1,149 @@
+//- General power chart
+
+canvas#powerChart
+
+script.
+	// url = new URL(window.location.href)
+	// url.searchParams.get('adsfsdf')
+	Promise.all([
+		fetch("#{pwChConfig.baseUrl}"+'?dev_id='+"#{pwChConfig.dev_id}"+'&length='+"#{pwChConfig.predDataLen}")
+			.then(res => res.json()),
+		fetch("#{pwChConfig.baseUrl}"+'?dev_id='+"#{pwChConfig.dev_id}"+'&length=-'+"#{pwChConfig.devDataLen}")
+			.then(res => res.json())
+	]).then(([predData, devData]) => {
+		// setup 
+		const data = {
+			datasets: [
+				{ 
+					label: "#{pwChConfig.dataLabel}", 
+					data: devData, 
+					lineTension: 0.2,
+					borderColor: '#009dff',
+					backgroundColor: '#009dff7f',
+					fill: true, 
+				}, { 
+					label: 'Predicted' + "#{pwChConfig.dataLabel}",
+					data: [devData.at(-1)].concat(predData), 
+					lineTension: 0.2,
+					borderColor: '#00ff4c',
+					backgroundColor: '#00ff4c7f',
+					fill: true, 
+					//- borderDash: [5, 5],
+				}
+			]
+		};
+		
+		const now_anotate = {
+			type: 'line',
+			borderColor: 'black',
+			borderWidth: 1,
+			display: (ctx) => ctx.chart.isDatasetVisible(1),
+			label: {
+				display: true,
+				content: 'Now',
+				position: 'start'
+			},
+			scaleID: 'x',
+			value: devData.at(-1).timestamp
+		};
+
+		const abnomal_anotate = {
+			type: 'box',
+			xMin: devData.at(Math.floor("#{pwChConfig.devDataLen}"/3)).timestamp,
+			xMax: devData.at(Math.floor("#{pwChConfig.devDataLen}"*2/3)).timestamp,
+			// yMin: 0,
+			// yMax: 100,
+			backgroundColor: 'rgba(250, 0, 0, 0.2)',
+			borderColor: 'rgba(250, 0, 0, 1)',
+			drawTime: 'beforeDatasetsDraw',
+			borderWidth: 2,
+			borderRadius: 0,
+			label: {
+				display: true,
+				content: 'Abnormality',
+				position: 'start'
+			}
+		};
+
+		// config 
+		const config = {
+			type: 'line',
+			data,
+			options: {
+				elements: {
+					point: {
+						pointRadius: 1.5
+					}
+				},
+				maintainAspectRatio: false,
+				parsing: {
+					xAxisKey: "#{pwChConfig.xAxisKey}",
+					yAxisKey: "#{pwChConfig.yAxisKey}",
+				},
+				scales: {
+					x: {
+						type: 'time',
+						time: {
+						},
+						adapters: {
+							date: {
+								// FIXME: database should store utc+0 and this should be change to default
+								locale: 'us', 
+								zone: 'UTC+0'
+							}
+						},
+						offsetAfterAutoskip: true
+					},
+					y: {
+						beginAtZero: true
+					}
+				},
+				
+				plugins: {
+					zoom: {
+						pan: {
+							mode: 'x',
+							scaleMode: 'x',
+							enabled: true
+						},
+						limits: {
+							
+						},
+						zoom: {
+							mode: 'x',
+							scaleMode: 'x',
+							wheel: {
+								enabled: true
+							},
+							pinch: {
+								enabled: true
+							}
+						}
+					}, 
+
+					annotation: {
+						annotations: {
+							now_anotate,
+							abnomal_anotate
+						}
+					},
+					
+					title: {
+						display: false, // TODO: Title wouldn't nesscessary to placed on the chart, use external title instead
+						position: 'top',
+						text: "#{pwChConfig.chartTitle}",
+						padding: {
+							bottom: 0,
+							top: 0
+						}
+					}
+				}
+			}
+		};
+
+		// render init block
+		const powerChart = new Chart(
+			document.getElementById('powerChart'),
+			config
+		);
+	})

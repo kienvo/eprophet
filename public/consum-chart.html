@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title></title>
+	<style>
+		* {
+			margin: 0;
+			padding: 0;
+			font-family: sans-serif;
+		}
+
+		.chartMenu {
+			width: 100vw;
+			height: 40px;
+			background: #1A1A1A;
+			color: rgba(54, 162, 235, 1);
+		}
+
+		.chartMenu p {
+			padding: 10px;
+			font-size: 20px;
+		}
+
+		.chartCard {
+			width: 100vw;
+			height: calc(100vh - 60px);
+			background: rgba(54, 162, 235, 0.2);
+			display: flex;
+			align-items: center;
+			justify-content: center;
+		}
+
+		.chartBox {
+			width: 700px;
+			padding: 5px;
+			background: white;
+		}
+	</style>
+</head>
+
+<body>
+	<div class="chartMenu">
+	</div>
+	<div class="chartCard">
+		<div class="chartBox">
+			<canvas id="powerChart"></canvas>
+		</div>
+	</div>
+	<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+	<script src="https://cdn.jsdelivr.net/npm/luxon@^2"></script>
+	<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-luxon@^1"></script>
+
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/hammer.js/2.0.8/hammer.min.js"
+		integrity="sha512-UXumZrZNiOwnTcZSHLOfcTs0aos2MzBWHXOHOuB0J/R44QB0dwY5JgfbvljXcklVf65Gc4El6RjZ+lnwd2az2g=="
+		crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-zoom/2.0.1/chartjs-plugin-zoom.min.js"
+		integrity="sha512-wUYbRPLV5zs6IqvWd88HIqZU/b8TBx+I8LEioQ/UC0t5EMCLApqhIAnUg7EsAzdbhhdgW07TqYDdH3QEXRcPOQ=="
+		crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+	<script
+		src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js"></script>
+
+	<script>
+		const predBaseUrl = '/api/consum-fc'
+		const devBaseUrl = '/api/consum'
+		const dev_id = 'D4:8A:FC:A5:ED:E0'
+
+		var d12 = new Date()
+		var d11 = new Date(d12)
+		var d21 = new Date(d12)
+		var d22 = new Date(d12)
+		d11.setDate(d12.getDate() - 7)
+		d21.setDate(d12.getDate() + 1)
+		d22.setDate(d12.getDate() + 7)
+		d11 = new Date(d11.toDateString() + ' 00:00:00 UTC+0').toISOString().split('T')[0]
+		d12 = new Date(d12.toDateString() + ' 00:00:00 UTC+0').toISOString().split('T')[0]
+		d21 = new Date(d21.toDateString() + ' 00:00:00 UTC+0').toISOString().split('T')[0]
+		d22 = new Date(d22.toDateString() + ' 00:00:00 UTC+0').toISOString().split('T')[0]
+
+		const dataLabel = 'Power Consumption (Wh)'
+		const xAxisKey = 'consumption' // data field
+		const yAxisKey = 'date' // time field
+		const ctx = document.getElementById('powerChart')
+
+		const devDatareq = fetch(devBaseUrl + '?dev_id=' + dev_id + '&d1=' + d11 + '&d2=' + d12)
+			.then(res => res.json())
+		const predDatareq = fetch(predBaseUrl + '?dev_id=' + dev_id + '&d1=' + d21 + '&d2=' + d22)
+			.then(res => res.json())
+
+		Promise.all([predDatareq, devDatareq])
+			.then(([predData, devData]) => {
+				// setup 
+				const data = {
+					datasets: [
+						{
+							label: dataLabel,
+							data: devData,
+							lineTension: 0.2,
+							borderColor: '#009dff',
+							backgroundColor: '#009dff7f',
+							fill: true,
+							barPercentage: 2,
+						}, {
+							label: 'Predicted ' + dataLabel,
+							data: predData,
+							lineTension: 0.2,
+							borderColor: '#00ff4c',
+							backgroundColor: '#00ff4c7f',
+							fill: true,
+							barPercentage: 2,
+						}
+					]
+				};
+
+				const now_anotate = {
+					type: 'line',
+					borderColor: 'black',
+					borderWidth: 1,
+					display: (ctx) => ctx.chart.isDatasetVisible(1),
+					label: {
+						display: true,
+						content: 'Today',
+						position: 'end'
+					},
+					scaleID: 'y',
+					value: devData.at(-1).date
+				};
+
+				// config 
+				const config = {
+					type: 'bar',
+					data: data,
+					options: {
+						indexAxis: 'y',
+						parsing: {
+							xAxisKey: xAxisKey,
+							yAxisKey: yAxisKey,
+						},
+						scales: {
+							y: {
+								adapters: {
+									date: {
+										// FIXME: database should store utc+0 and this should be change to default
+										locale: 'us',
+										zone: 'UTC+0'
+									}
+								},
+								offsetAfterAutoskip: true,
+							},
+							x: {
+								beginAtZero: true,
+							}
+						},
+						plugins: {
+							zoom: {
+								pan: {
+									mode: 'y',
+									scaleMode: 'y',
+									enabled: true
+								},
+								limits: {
+
+								},
+								zoom: {
+									mode: 'y',
+									scaleMode: 'y',
+									wheel: {
+										enabled: true
+									},
+									pinch: {
+										enabled: true
+									}
+								}
+							},
+							annotation: {
+								annotations: {
+									now_anotate,
+								}
+							},
+							title: {
+								display: true,
+								position: 'top',
+								text: 'POWER CONSUMTION IN RECENT DATES',
+								padding: {
+									bottom: 0,
+									top: 0
+								}
+							}
+						}
+					}
+				};
+
+				// render init block
+				const powerChart = new Chart(
+					ctx,
+					config
+				);
+			})
+
+	</script>
+
+</body>
+
+</html>

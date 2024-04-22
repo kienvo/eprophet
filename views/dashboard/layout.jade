@@ -1,0 +1,43 @@
+//- Layout for dashboards
+
+doctype html
+html
+	head
+		title= title
+		link(rel='stylesheet', href='/stylesheets/style.css')
+		include ../inc/common
+		include ../inc/charts/utils
+
+	body
+		.row
+			.col-md-3.col-xl-2.fixed-top.vh-100.d-flex.flex-column.flex-shrink-0.p-3.bg-light
+				include sidebar
+			.col-md-3.col-xl-2
+			.col-md-9.col-xl-10
+
+				.row.mb-5 
+					ul.nav.nav-tabs.d-flex 
+						each dev in devList
+								li.nav-item
+									a.nav-link(
+										class=(dev.isActive ? 'active' : '' ) 
+										aria-current = dev.isActive ? 'page' : false 
+										href='../#{dev.dev_id}/dashboard') #{dev.dev_id}
+						a.btn.bi.bi-plus-square.ms-auto(style='font-size: 25px; padding: 0px;' href='../add')
+
+				
+				.row.mb-5(style="height:300px;")
+					block stackedChart
+
+				.d-flex.justify-content-end
+					button.btn.btn-outline-primary.btn-sm.me-2 Run new forecast
+					button.btn.btn-outline-danger.btn-sm.me-2 Highlight abnormalities
+
+				.row(style="height:400px;")
+					.col-md-3(style="height: inherit;")
+						block consumChart
+					.col-md-9(style="height: inherit;")
+						block powerChart
+		
+
+

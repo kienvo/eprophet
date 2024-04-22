@@ -1,0 +1,110 @@
+//- General power consumtion chart
+canvas#consumChart
+script.
+
+	var d12 = new Date()
+	var d11 = new Date(d12)
+	var d21 = new Date(d12)
+	var d22 = new Date(d12)
+	d11.setDate(d12.getDate() - 7)
+	d21.setDate(d12.getDate() + 1)
+	d22.setDate(d12.getDate() + 7)
+	d11 = new Date(d11.toDateString() + ' 00:00:00 UTC+0').toISOString().split('T')[0]
+	d12 = new Date(d12.toDateString() + ' 00:00:00 UTC+0').toISOString().split('T')[0]
+	d21 = new Date(d21.toDateString() + ' 00:00:00 UTC+0').toISOString().split('T')[0]
+	d22 = new Date(d22.toDateString() + ' 00:00:00 UTC+0').toISOString().split('T')[0]
+
+	Promise.all([
+		fetch("#{consumChConfig.devBaseUrl}" + '?dev_id=' + "#{consumChConfig.dev_id}" + '&d1=' + d11 + '&d2=' + d12)
+			.then(res => res.json()),
+		fetch("#{consumChConfig.predBaseUrl}" + '?dev_id=' + "#{consumChConfig.dev_id}" + '&d1=' + d21 + '&d2=' + d22)
+			.then(res => res.json())
+	]).then(([devData, predData]) => {
+			// setup 
+			const data = {
+				datasets: [
+					{
+						label: "#{consumChConfig.dataLabel}",
+						data: devData,
+						lineTension: 0.2,
+						borderColor: '#009dff',
+						backgroundColor: '#009dff7f',
+						fill: true,
+						barPercentage: 2,
+					}, {
+						label: 'Predicted ' + "#{consumChConfig.dataLabel}",
+						data: predData,
+						lineTension: 0.2,
+						borderColor: '#00ff4c',
+						backgroundColor: '#00ff4c7f',
+						fill: true,
+						barPercentage: 2,
+					}
+				]
+			};
+
+			const now_anotate = {
+				type: 'line',
+				borderColor: 'black',
+				borderWidth: 1,
+				display: (ctx) => ctx.chart.isDatasetVisible(1),
+				label: {
+					display: true,
+					content: 'Today',
+					position: 'end'
+				},
+				scaleID: 'y',
+				value: devData.at(-1).date
+			};
+
+			// config 
+			const config = {
+				type: 'bar',
+				data: data,
+				options: {
+				maintainAspectRatio: false,
+					indexAxis: 'y',
+					parsing: {
+						xAxisKey: "#{consumChConfig.xAxisKey}",
+						yAxisKey: "#{consumChConfig.yAxisKey}",
+					},
+					scales: {
+						y: {
+							adapters: {
+								date: {
+									// FIXME: database should store utc+0 and this should be change to default
+									locale: 'us',
+									zone: 'UTC+0'
+								}
+							},
+							offsetAfterAutoskip: true,
+						},
+						x: {
+							beginAtZero: true,
+						}
+					},
+					plugins: {
+						annotation: {
+							annotations: {
+								now_anotate,
+							}
+						},
+						title: {
+							display: false, // TODO: Title wouldn't nesscessary to placed on the chart, use external title instead
+							position: 'top',
+							text: "#{consumChConfig.chartTitle}",
+							padding: {
+								bottom: 0,
+								top: 0
+							}
+						}
+					}
+				}
+			};
+
+			// render init block
+			const powerChart = new Chart(
+				document.getElementById('consumChart'),
+				config
+			);
+		})
